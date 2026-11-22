@@ -137,12 +137,12 @@ Entry* VirtualFileSystem::ResolvePath(const std::string_view path) {
     normalized_path = resolved_path;
   }
 
-  // Find the device. The longest mount path wins, so a device mounted inside
-  // another device's tree (e.g. under the \Device\Harddisk0 NullDevice) is
-  // reachable regardless of registration order.
+  // Find the device with the longest matching mount path. Devices nest, e.g.
+  // \Device\Harddisk0\Partition1\Content lives inside \Device\Harddisk0, so the
+  // most specific mount must win regardless of registration order.
   Device* device = nullptr;
   for (const auto& d : devices_) {
-    if (xe::utf8::starts_with(normalized_path, d->mount_path()) &&
+    if (xe::utf8::starts_with_case(normalized_path, d->mount_path()) &&
         (!device || d->mount_path().size() > device->mount_path().size())) {
       device = d.get();
     }

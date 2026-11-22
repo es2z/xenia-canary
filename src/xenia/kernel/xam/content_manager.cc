@@ -472,8 +472,11 @@ void ContentManager::MountHddPackageRoot(
   }
 
   // Per package root, as the device snapshots its tree on mount.
-  auto device =
-      std::make_unique<vfs::HostPathDevice>(mount_path, package_root, false);
+  // Present single-file packages as their STFS container, as the console
+  // stores them, for titles that check a save's size through this path.
+  auto device = std::make_unique<vfs::HostPathDevice>(
+      mount_path, package_root, false, /*package=*/false,
+      /*collapse_content_packages=*/true);
   if (!device->Initialize()) {
     XELOGE("ContentManager: Failed to mount {} at {}",
            xe::path_to_utf8(package_root), mount_path);
